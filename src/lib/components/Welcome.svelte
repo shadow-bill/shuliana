@@ -46,7 +46,7 @@
         position: relative;
         margin: 0;
         padding: 0;
-        height: 100vh;
+        height: 100%;
         background: linear-gradient(180deg, #0a0a0a 0%, #1a0033 50%, #330066 100%);
         overflow: hidden;
         perspective: 1000px;

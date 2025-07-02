@@ -14,6 +14,8 @@
 	let ctx: CanvasRenderingContext2D;
     let lastTime = 0;
     let canvasWidth = 640;
+    let isVisible = false;
+    let intersectionObserver: IntersectionObserver | null = null;
 
     // Reactive statement that runs when window dimensions change
     $: if (canvas) {
@@ -132,53 +134,90 @@
     };
 
 	onMount(() => {
-        let tmpCtx = canvas.getContext('2d');
+    let tmpCtx = canvas.getContext('2d');
 
-        if (tmpCtx === null) {
-            throw Error("Unable to load 2d context");
+    if (tmpCtx === null) {
+        throw Error("Unable to load 2d context");
+    }
+
+    ctx = tmpCtx;
+
+    // Set up intersection observer to track visibility
+    intersectionObserver = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                isVisible = entry.isIntersecting;
+                
+                // If becoming visible and animation loop isn't running, start it
+                if (isVisible && !animationId) {
+                    lastTime = 0; // Reset timing to prevent large deltaTime jump
+                    animationId = requestAnimationFrame((time) => frame(time / 1000.0));
+                }
+            });
+        },
+        {
+            // Trigger when at least 10% of the container is visible
+            threshold: 0.1,
+            // Optional: add some margin to start rendering slightly before fully visible
+            rootMargin: '50px 0px'
+        }
+    );
+
+    // Start observing the canvas container
+    if (canvas.parentElement) {
+        intersectionObserver.observe(canvas.parentElement);
+    }
+    
+    function frame(currentTime: number) {
+        if (ctx === null) {
+            return;
         }
 
-		ctx = tmpCtx;
+        // Only continue the animation loop if visible
+        if (!isVisible) {
+            animationId = 0; // Clear the animation ID
+            return;
+        }
+
+        const deltaTime = lastTime === 0 ? 0 : currentTime - lastTime;
+        lastTime = currentTime;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        handleCheckpoints();
+        handleInput(deltaTime);
+        updateCamera();
         
-        function frame(currentTime: number) {
-            if (ctx === null) {
-                return;
-            }
-
-            const deltaTime = lastTime === 0 ? 0 : currentTime - lastTime;
-            lastTime = currentTime;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            handleCheckpoints();
-            handleInput(deltaTime);
-            updateCamera();
-            
-            // Save canvas state for camera transformation
-            ctx.save();
-            ctx.translate(-game.camera.x, -game.camera.y);
-            
-            renderBackground("BackgroundSunset");
-            renderScenery(currentTime);
-            renderDecorations(currentTime);
-            renderActors(currentTime, deltaTime);
-            renderPlayer(currentTime, deltaTime);
-            renderParticles(currentTime, deltaTime);
-            
-            // Restore canvas state
-            ctx.restore();
-            
-            animationId = requestAnimationFrame((time) => frame(time / 1000.0));
-        }
-
+        // Save canvas state for camera transformation
+        ctx.save();
+        ctx.translate(-game.camera.x, -game.camera.y);
+        
+        renderBackground("BackgroundSunset");
+        renderScenery(currentTime);
+        renderDecorations(currentTime);
+        renderActors(currentTime, deltaTime);
+        renderPlayer(currentTime, deltaTime);
+        renderParticles(currentTime, deltaTime);
+        
+        // Restore canvas state
+        ctx.restore();
+        
+        // Continue the animation loop
         animationId = requestAnimationFrame((time) => frame(time / 1000.0));
+    }
 
-        return () => {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
-        };
-	});
+    // Start the initial animation frame (visibility check will handle pausing)
+    animationId = requestAnimationFrame((time) => frame(time / 1000.0));
+
+    return () => {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+        if (intersectionObserver) {
+            intersectionObserver.disconnect();
+        }
+    };
+});
 
     function handleCheckpoints() {
         if (game.player.y <= 512) {

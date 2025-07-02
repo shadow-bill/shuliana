@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   // Props
   export let apiKey = 'AIzaSyAg-JnddkifD5VUJMcc6_gyIPlYY88aLL0';
@@ -379,6 +379,9 @@
   let map;
   let google;
   let markersOnMap = [];
+  let observer;
+  let isVisible = false;
+  let mapInitialized = false;
 
   // Load Google Maps API
   async function loadGoogleMaps() {
@@ -394,8 +397,8 @@
   }
 
   // Initialize the map
-  function initMap() {
-    if (!google || !mapContainer) return;
+  async function initMap() {
+    if (!google || !mapContainer || mapInitialized) return;
 
     const mapOptions = {
       center: { lat: centerLat, lng: centerLng },
@@ -407,6 +410,7 @@
     };
 
     map = new google.maps.Map(mapContainer, mapOptions);
+    mapInitialized = true;
     
     // Add markers if provided
     addMarkers();
@@ -444,8 +448,39 @@
     });
   }
 
-  // Update map when props change
-  $: if (map && google) {
+  // Set up intersection observer
+  function setupObserver() {
+    if (!mapContainer) return;
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(async (entry) => {
+          if (entry.isIntersecting && !mapInitialized) {
+            isVisible = true;
+            
+            try {
+              await loadGoogleMaps();
+              await initMap();
+            } catch (error) {
+              console.error('Error loading Google Maps:', error);
+            }
+            
+            // Stop observing once map is initialized
+            observer.unobserve(mapContainer);
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the element is visible
+        rootMargin: '50px' // Start loading 50px before element comes into view
+      }
+    );
+
+    observer.observe(mapContainer);
+  }
+
+  // Update map when props change (only if map is already initialized)
+  $: if (map && google && mapInitialized) {
     map.setCenter({ lat: centerLat, lng: centerLng });
     map.setZoom(zoom);
     map.setOptions({ 
@@ -456,17 +491,19 @@
     });
   }
 
-  $: if (map && markers) {
+  $: if (map && markers && mapInitialized) {
     addMarkers();
   }
 
   // Initialize on mount
-  onMount(async () => {
-    try {
-      await loadGoogleMaps();
-      initMap();
-    } catch (error) {
-      console.error('Error loading Google Maps:', error);
+  onMount(() => {
+    setupObserver();
+  });
+
+  // Clean up on destroy
+  onDestroy(() => {
+    if (observer) {
+      observer.disconnect();
     }
   });
 
@@ -476,8 +513,9 @@
   }
 
   export function setCenter(newCenter) {
-    center = newCenter;
-    if (map) map.setCenter(center);
+    centerLat = newCenter.lat;
+    centerLng = newCenter.lng;
+    if (map) map.setCenter(newCenter);
   }
 
   export function setZoom(newZoom) {
@@ -492,6 +530,18 @@
   export function clearMarkers() {
     markers = [];
   }
+
+  // Force initialize map (useful if you need to load it programmatically)
+  export async function forceInit() {
+    if (!mapInitialized) {
+      try {
+        await loadGoogleMaps();
+        await initMap();
+      } catch (error) {
+        console.error('Error force-loading Google Maps:', error);
+      }
+    }
+  }
 </script>
 
 <div 
@@ -503,6 +553,10 @@
     <div class="error-message">
       <p>Google Maps API key is required</p>
     </div>
+  {:else if !mapInitialized}
+    <div class="loading-message">
+      <p>Loading map...</p>
+    </div>
   {/if}
 </div>
 
@@ -513,19 +567,25 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
-  .error-message {
+  .error-message,
+  .loading-message {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
-    background-color: #f5f5f5;
+    background-color: #222222;
     color: #666;
     font-family: Arial, sans-serif;
   }
 
-  .error-message p {
+  .error-message p,
+  .loading-message p {
     margin: 0;
     padding: 20px;
     text-align: center;
+  }
+
+  .loading-message {
+    background-color: #222222;
   }
 </style>
