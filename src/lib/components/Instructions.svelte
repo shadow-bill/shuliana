@@ -5,36 +5,65 @@
 
 <div class="instructions">
     <div class="logo">
-        <img src="/web/brickhouse.png" alt="A generated logo for the venue - brickhouse social" />
-        <div class="items">
-            <div class="item">
-                <div class="title">{$_('instructions.schedule')}</div>
-                <div class="value">{$_('instructions.schedule-info-start')}</div>
-                <div class="value">{$_('instructions.schedule-info-end')}</div>
-            </div>
-            <div class="item">
-                <div class="title">{$_('instructions.what-to-expect')}</div>
-                <div class="value">{$_('instructions.what-to-expect-info-drinks')}</div>
-                <div class="value">{$_('instructions.what-to-expect-info-food')}</div>
-            </div>
-            <div class="item">
-                <div class="title">{$_('instructions.getting-there')}</div>
-                <div class="value">{$_('instructions.getting-there-info-location')}</div>
-                <div class="value">{$_('instructions.getting-there-info-finding-it')}</div>
-            </div>
+        <img src="/web/ceremony.png" alt="A generated logo for the ceremony venue - The Pankhurst Suite" />
+    </div>
+    <div class="items">
+        <div class="item">
+            <div class="title">{$_('instructions.ceremony.schedule')}</div>
+            <div class="value">{$_('instructions.ceremony.schedule-info-start')}</div>
+            <div class="value">{$_('instructions.ceremony.schedule-info-end')}</div>
         </div>
-        <div class="map">
-            <GoogleMap />
+        <div class="item">
+            <div class="title">{$_('instructions.ceremony.what-to-expect')}</div>
+            <div class="value">{$_('instructions.ceremony.what-to-expect-info-dress')}</div>
+            <div class="value">{$_('instructions.ceremony.what-to-expect-info-gifts')}</div>
         </div>
+        <div class="item">
+            <div class="title">{$_('instructions.ceremony.getting-there')}</div>
+            <div class="value">{$_('instructions.ceremony.getting-there-info-location')}</div>
+            <div class="value">{$_('instructions.ceremony.getting-there-info-finding-it')}</div>
+        </div>
+    </div>
+    <div class="map">
+        <GoogleMap centerLat={53.4791626} centerLng={-2.2465828} markers={[{ lat: 53.4791626, lng: -2.2465828, title: 'Registration of Births Deaths & Marriages' }]} />
+    </div>
+    <div class="logo">
+        <img src="/web/brickhouse.png" alt="A generated logo for the party venue - brickhouse social" />
+    </div>
+    <div class="items">
+        <div class="item">
+            <div class="title">{$_('instructions.party.schedule')}</div>
+            <div class="value">{$_('instructions.party.schedule-info-start')}</div>
+            <div class="value">{$_('instructions.party.schedule-info-end')}</div>
+        </div>
+        <div class="item">
+            <div class="title">{$_('instructions.party.what-to-expect')}</div>
+            <div class="value">{$_('instructions.party.what-to-expect-info-drinks')}</div>
+            <div class="value">{$_('instructions.party.what-to-expect-info-food')}</div>
+        </div>
+        <div class="item">
+            <div class="title">{$_('instructions.party.getting-there')}</div>
+            <div class="value">{$_('instructions.party.getting-there-info-location')}</div>
+            <div class="value">{$_('instructions.party.getting-there-info-finding-it')}</div>
+        </div>
+    </div>
+    <div class="map">
+        <GoogleMap />
     </div>
 </div>
 
 <style>
     .instructions {
-        padding: 2rem 6vw;
+        padding: 0 6vw 2rem 6vw;
+        background-color: #222222;
+opacity: 1;
+background-image:  radial-gradient(#3b1838 2px, transparent 2px), radial-gradient(#3b1838 2px, #222222 2px);
+background-size: 80px 80px;
+background-position: 0 0,40px 40px;
     }
 
     .logo {
+        padding-top: 2rem;
         text-align: center;
     }
 

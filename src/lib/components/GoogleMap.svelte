@@ -3,7 +3,8 @@
 
   // Props
   export let apiKey = 'AIzaSyAg-JnddkifD5VUJMcc6_gyIPlYY88aLL0';
-  export let center = { lat: 53.4734624, lng: -2.2413626 };
+  export let centerLat = 53.4734624;
+  export let centerLng = -2.2413626;
   export let zoom = 16;
   export let width = '100%';
   export let height = '400px';
@@ -387,26 +388,8 @@
     }
 
     return new Promise((resolve, reject) => {
-      if (!apiKey) {
-        reject(new Error('Google Maps API key is required'));
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      
-      script.onload = () => {
-        google = window.google;
-        resolve();
-      };
-      
-      script.onerror = () => {
-        reject(new Error('Failed to load Google Maps API'));
-      };
-      
-      document.head.appendChild(script);
+      google = window.google;
+      resolve();
     });
   }
 
@@ -415,7 +398,7 @@
     if (!google || !mapContainer) return;
 
     const mapOptions = {
-      center,
+      center: { lat: centerLat, lng: centerLng },
       zoom,
       styles: mapStyles,
       disableDefaultUI,
@@ -463,7 +446,7 @@
 
   // Update map when props change
   $: if (map && google) {
-    map.setCenter(center);
+    map.setCenter({ lat: centerLat, lng: centerLng });
     map.setZoom(zoom);
     map.setOptions({ 
       styles: mapStyles,

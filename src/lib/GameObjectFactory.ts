@@ -1,4 +1,4 @@
-export type GameObjectType = "Actor" | "TileRectangle" | "TileSlope" | "Decoration";
+export type GameObjectType = "Actor" | "TileRectangle" | "TileSlope" | "Decoration" | "Particle";
 
 export type SlopeDirection = "None" | "UpRight" | "UpLeft" | "DownRight" | "DownLeft";
 
@@ -7,7 +7,9 @@ export type AnimationDirection = "Up" | "Left" | "Down" | "Right";
 
 export type AnimationName = "Idle" | "Run" | "Jump" | "Attack";
 
-export type PrefabName = "House";
+export type PrefabName = "House" | "Barrel";
+
+export type ParticleName = "Aura" | "Regen";
 
 export interface GameObject {
     type: GameObjectType,
@@ -48,6 +50,12 @@ export interface Animation {
     direction: AnimationDirection,
 }
 
+export interface Particle extends GameObject {
+    id: string,
+    name: ParticleName,
+    animation: Animation
+}
+
 export interface CollisionBox {
     x: number,
     y: number,
@@ -68,6 +76,8 @@ export interface Actor extends GameObject {
     jumpPower: number,
     gravity: number,
     health: number,
+    specialCooldownFrames: number,
+    specialEffectFrames: number,
 }
 
 export interface Camera {
@@ -88,6 +98,7 @@ export interface World {
     scenery: Tile[],
     decorations: Decoration[],
     actors: Actor[],
+    particles: Particle[],
     player: Actor,
     checkpoints: Checkpoint[],
     background: string,
@@ -98,6 +109,7 @@ export interface GameEvents {
     jump: boolean,
     right: boolean,
     left: boolean,
+    special: boolean,
 }
 
 // Tiles MUST use images which are 64px and without any animation frames
@@ -153,6 +165,27 @@ export function getActor(name: string = '', image: string = '', animation: Anima
         jumpPower: 370.0,
         gravity: 950.0,
         health: health,
+        specialCooldownFrames: 0,
+        specialEffectFrames: 0,
+        width: 64,
+        height: 64
+    };
+}
+
+export function getParticle(name: ParticleName, x: number = 0.0, y: number = 0.0) : Particle {
+    return {
+        id: (Math.random().toString(36)+'00000000000000000').slice(2, 12),
+        type: 'Particle',
+        name: name,
+        image: name,
+        animation: {
+            name: 'Idle',
+            frame: 0,
+            lastFrameTime: 0,
+            direction: 'Up',
+        },
+        x: x,
+        y: y,
         width: 64,
         height: 64
     };

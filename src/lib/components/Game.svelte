@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import DebugMenu from '$lib/components/DebugMenu.svelte';
 	import { type SpriteData } from '$lib/ImageLoader';
-    import { type World, type Actor, type Tile, type Animation, type AnimationName, type AnimationDirection, type Prefab, getTile, getDecoration, getActor, getCheckpoint } from '$lib/GameObjectFactory';
+    import { type World, type Actor, type Tile, type Animation, type AnimationName, type AnimationDirection, type Prefab, type Particle, getTile, getDecoration, getActor, getCheckpoint, getParticle } from '$lib/GameObjectFactory';
 
 	export let GameImages: Record<string, SpriteData> = {};
     export let PlayerName: string;
@@ -70,6 +70,13 @@
                     getTile("WoodWallBottomMiddleLeft", 1, 2, 1, 1),
                     getTile("WoodWallBottomMiddleRight", 2, 2, 1, 1),
                     getTile("WoodWallBottomRight", 3, 2, 1, 1),
+                    getTile("DoorTop", 2, 1, 1, 1),
+                    getTile("DoorBottom", 2, 2, 1, 1),
+                ]
+            },
+            Barrel: {
+                tiles: [
+                    getTile("Barrel", 0, 0, 1, 1),
                 ]
             }
         },
@@ -99,12 +106,14 @@
         ],
         decorations: [
             getDecoration("House", 2, 1),
+            getDecoration("Barrel", 1, 3),
             getDecoration("House", 26, 1)
 
         ],
         actors: [
-            getActor('Tifa', 'Tifa', 'Idle', 128.0, 0.0),    
+            getActor("Tifa", "Tifa", "Idle", 128.0, 192.0)
         ],
+        particles: [],
         player: playerCharacter,
         checkpoints: [
             // These must be in descending (inverse) order of x so that later checkpoints are checked first
@@ -118,6 +127,7 @@
             jump: false,
             right: false,
             left: false,
+            special: false,
         }
     };
 
@@ -153,6 +163,7 @@
             renderDecorations(currentTime);
             renderActors(currentTime, deltaTime);
             renderPlayer(currentTime, deltaTime);
+            renderParticles(currentTime, deltaTime);
             
             // Restore canvas state
             ctx.restore();
@@ -186,8 +197,9 @@
     }
 
     function handleInput(deltaTime: number) {
-        handleActorInput(game.player, game.events.left, game.events.right, game.events.jump, deltaTime);
+        handleActorInput(game.player, game.events.left, game.events.right, game.events.jump, game.events.special, deltaTime);
         game.events.jump = false;
+        game.events.special = false;
     }
 
     function updateCamera() {
@@ -214,14 +226,40 @@
     }
 
     function renderScenery(time: number) {
+        // Calculate visible bounds with camera transformation
+        const viewLeft = game.camera.x;
+        const viewRight = game.camera.x + canvas.width;
+        const viewTop = game.camera.y;
+        const viewBottom = game.camera.y + canvas.height;
+        
         for (let item of game.scenery) {
+            // Calculate item bounds
+            const itemLeft = item.x;
+            const itemRight = item.x + item.width;
+            const itemTop = item.y;
+            const itemBottom = item.y + item.height;
+            
+            // Skip rendering if item is completely outside the visible area
+            if (itemRight < viewLeft || itemLeft > viewRight || 
+                itemBottom < viewTop || itemTop > viewBottom) {
+                continue;
+            }
+            
             const image: SpriteData = GameImages[item.image];
 
             for (var x = 0; x < item.width; x += item.tileWidthPx) {
                 for (var y = 0; y < item.height; y += item.tileHeightPx) {
-                    // Round tile positions to prevent subpixel gaps
+                    // Calculate individual tile bounds
                     const tileX = Math.round(item.x + x);
                     const tileY = Math.round(item.y + y);
+                    const tileRight = tileX + item.tileWidthPx;
+                    const tileBottom = tileY + item.tileHeightPx;
+                    
+                    // Skip this tile if it's completely outside the visible area
+                    if (tileRight < viewLeft || tileX > viewRight || 
+                        tileBottom < viewTop || tileY > viewBottom) {
+                        continue;
+                    }
                     
                     ctx.drawImage(image.image, 0, 0, image.width, image.height, tileX, tileY, item.tileWidthPx, item.tileHeightPx);
                 }
@@ -243,7 +281,7 @@
 
     function renderActors(time: number, deltaTime: number) {
         for (let actor of game.actors) {
-            handleActorInput(actor, false, false, false, deltaTime);
+            handleActorInput(actor, false, false, false, false, deltaTime);
             resolveCollisions(actor, deltaTime);
             handleMomentum(time, actor);
             renderImage(time, actor);
@@ -254,6 +292,23 @@
         resolveCollisions(game.player, deltaTime);
         handleMomentum(time, game.player);
         renderImage(time, game.player);
+    }
+
+    function renderParticles(time: number, deltaTime: number) {
+        let particlesToRemove : Particle[] = [];
+
+        for (let particle of game.particles) {
+            if (particle.animation.frame == 0 && particle.animation.lastFrameTime != 0) {
+                particlesToRemove.push(particle);
+                continue;
+            }
+
+            renderParticle(time, particle);
+        }
+
+        for (let particle of particlesToRemove) {
+            game.particles = game.particles.filter(removed => removed.id != particle.id);
+        }
     }
 
     function resolveCollisions(actor: Actor, deltaTime: number) {
@@ -439,6 +494,32 @@
         }
     }
 
+    function renderParticle(currentTime: number, particle: Particle) {
+        const image = GameImages[`${particle.image}${particle.animation.name}`];
+
+        if (currentTime - particle.animation.lastFrameTime >= image.frameTime) {
+            // Advance to next frame
+            particle.animation.frame = (particle.animation.frame + 1) % image.totalFrames;
+            particle.animation.lastFrameTime = currentTime;
+        }
+
+        const sourceX = particle.animation.frame * image.width;
+        const sourceY = image.height * getRowFromDirection(particle.animation.direction);
+        
+        // Round actor position to prevent subpixel rendering
+        const actorX = Math.round(particle.x);
+        const actorY = Math.round(particle.y);
+        
+        ctx.drawImage(
+            image.image,
+            sourceX, sourceY,          // Source position
+            image.width, image.height, // Source size
+            actorX, actorY,            // Destination position (rounded)
+            image.width, image.height  // Destination size
+        );
+    }
+
+
     function renderImage(currentTime: number, actor: Actor) {
         const image = GameImages[`${actor.image}${actor.animation.name}`];
 
@@ -477,7 +558,7 @@
         }
     }
 
-    function handleActorInput(actor: Actor, isMovingLeft: boolean, isMovingRight: boolean, isJumping: boolean, deltaTime: number) {
+    function handleActorInput(actor: Actor, isMovingLeft: boolean, isMovingRight: boolean, isJumping: boolean, isUsingSpecial: boolean, deltaTime: number) {
         let acceleration = 0;
         
         if (isMovingLeft) {
@@ -505,6 +586,37 @@
         if (isJumping && actor.onGround) {
             actor.velocityY = -actor.jumpPower;
             actor.onGround = false;
+        }
+
+        if (actor.specialCooldownFrames > 0) {
+            actor.specialCooldownFrames--;
+        }
+
+        if (actor.specialEffectFrames > 0) {
+            actor.specialEffectFrames--;
+        }
+
+        if (actor.specialEffectFrames == 0 && game.player.name != 'Shane') {
+            actor.gravity = 950.0;
+        }
+
+        if (actor.specialCooldownFrames > 0 && game.player.name != 'Shane' && !actor.onGround && actor.specialCooldownFrames % 30 == 0) {
+            game.particles.push(getParticle('Regen', actor.x, actor.y));
+        }
+
+        if (isUsingSpecial && actor.specialCooldownFrames == 0) {
+            if (game.player.name == 'Shane') {
+                game.particles.push(getParticle('Aura', actor.x, actor.y));
+                actor.velocityX = actor.maxSpeed * 100 * (actor.velocityX >= 0.0 ? 1 : -1);
+                game.particles.push(getParticle('Aura', actor.x + actor.velocityX * deltaTime, actor.y));
+            } else {
+                game.particles.push(getParticle('Regen', actor.x, actor.y));
+                actor.gravity = 20.0;
+                actor.friction = 0.0000005;
+                actor.specialEffectFrames = 100;
+            }
+
+            actor.specialCooldownFrames = 250;
         }
         
         // Apply gravity with delta time
@@ -542,6 +654,11 @@
                     game.events.right = true;
                 }
                 break;
+            case 'KeyS':
+            case 'ArrowDown':
+            case 'Space':
+                game.events.special = true;
+                break;
         }
     }
 
@@ -575,6 +692,7 @@
         game.events.jump = false;
         game.events.left = false;
         game.events.right = false;
+        game.events.special = false;
     }
 </script>
 
@@ -602,14 +720,14 @@
     </div>
     <div class="mobile-controls">
         <div class="dpad">
-            <div class="dpad-button dpad-up" on:touchstart={() => handleKeyDownEvent("ArrowUp")} on:touchend={() => handleKeyUpEvent("ArrowUp")} on:mousedown={() => handleKeyDownEvent("ArrowUp")} on:mouseup={() => handleKeyUpEvent("ArrowUp")}>↑</div>
-            <div class="dpad-button dpad-left" on:touchstart={() => handleKeyDownEvent("ArrowLeft")} on:touchend={() => handleKeyUpEvent("ArrowLeft")} on:mousedown={() => handleKeyDownEvent("ArrowLeft")} on:mouseup={() => handleKeyUpEvent("ArrowLeft")}>←</div>
-            <div class="dpad-button dpad-right" on:touchstart={() => handleKeyDownEvent("ArrowRight")} on:touchend={() => handleKeyUpEvent("ArrowRight")} on:mousedown={() => handleKeyDownEvent("ArrowRight")} on:mouseup={() => handleKeyUpEvent("ArrowRight")}>→</div>
+            <div class="dpad-button dpad-up" class:active={game.events.jump} on:touchstart={() => handleKeyDownEvent("ArrowUp")} on:touchend={() => handleKeyUpEvent("ArrowUp")} on:mousedown={() => handleKeyDownEvent("ArrowUp")} on:mouseup={() => handleKeyUpEvent("ArrowUp")}>↑</div>
+            <div class="dpad-button dpad-left" class:active={game.events.left} on:touchstart={() => handleKeyDownEvent("ArrowLeft")} on:touchend={() => handleKeyUpEvent("ArrowLeft")} on:mousedown={() => handleKeyDownEvent("ArrowLeft")} on:mouseup={() => handleKeyUpEvent("ArrowLeft")}>←</div>
+            <div class="dpad-button dpad-right" class:active={game.events.right} on:touchstart={() => handleKeyDownEvent("ArrowRight")} on:touchend={() => handleKeyUpEvent("ArrowRight")} on:mousedown={() => handleKeyDownEvent("ArrowRight")} on:mouseup={() => handleKeyUpEvent("ArrowRight")}>→</div>
         </div>
 
         <div class="action-buttons">
             <div class="action-row">
-                <div class="action-button" on:touchstart={() => handleKeyDownEvent("Space")} on:touchend={() => handleKeyUpEvent("Space")} on:mousedown={() => handleKeyDownEvent("Space")} on:mouseup={() => handleKeyUpEvent("Space")}>X</div>
+                <div class="action-button" class:active={game.player.specialCooldownFrames == 0} on:touchstart={() => handleKeyDownEvent("Space")} on:touchend={() => handleKeyUpEvent("Space")} on:mousedown={() => handleKeyDownEvent("Space")} on:mouseup={() => handleKeyUpEvent("Space")}>X</div>
             </div>
         </div>
     </div>
@@ -744,8 +862,9 @@
     }
 
     .action-button.active {
-        background: #cc0077;
+        background: #ff709d;
         border-color: #ff0099;
+        color: #000000;
         transform: scale(0.95);
     }
 

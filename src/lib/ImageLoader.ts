@@ -101,7 +101,7 @@ function loadSpritesheet(spritesheetData: SpritesheetData): Promise<SpriteData[]
 
 export async function loadAllSprites(): Promise<SpriteData[]> {
     let imagesToLoad = [
-        { name: "BackgroundSunset", width: 1912, height: 1080, totalFrames: 1, frameTime: 0 },
+        { name: "BackgroundSunset", width: 957, height: 540, totalFrames: 1, frameTime: 0 },
         { name: "GroundFlat", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
         { name: "GroundFlatEndLeft", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
         { name: "GroundFlatEndRight", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
@@ -116,6 +116,8 @@ export async function loadAllSprites(): Promise<SpriteData[]> {
         { name: "BrickWallLeft", width: 128, height: 320, totalFrames: 1, frameTime: 0 },
         { name: "BrickWall", width: 320, height: 320, totalFrames: 1, frameTime: 0 },
         { name: "BrickWallRight", width: 128, height: 320, totalFrames: 1, frameTime: 0 },
+        { name: "Door", width: 64, height: 128, totalFrames: 1, frameTime: 0 },
+        { name: "Barrel", width: 64, height: 64, totalFrames: 1, frameTime: 0 },
         { name: "GroomIdle", width: 64, height: 64, totalFrames: 2, frameTime: 0.5/2 },
         { name: "GroomRun", width: 64, height: 64, totalFrames: 8, frameTime: 1.0/8 },
         { name: "GroomJump", width: 64, height: 64, totalFrames: 5, frameTime: 0.5/5 },
@@ -127,6 +129,8 @@ export async function loadAllSprites(): Promise<SpriteData[]> {
         { name: "TifaAttack", width: 64, height: 64, totalFrames: 6, frameTime: 1.0/6 },
         // Actually TifaAttack until I have a jump animation for her
         { name: "TifaJump", width: 64, height: 64, totalFrames: 6, frameTime: 1.0/6 },
+        { name: "AuraIdle", width: 64, height: 64, totalFrames: 7, frameTime: 0.5/7 },
+        { name: "RegenIdle", width: 64, height: 64, totalFrames: 8, frameTime: 0.5/8 },
     ];
 
     let spritesheets: SpritesheetData[] = [
@@ -145,6 +149,13 @@ export async function loadAllSprites(): Promise<SpriteData[]> {
                 { name: "BottomMiddleLeft", x: 64, y: 128 },
                 { name: "BottomMiddleRight", x: 128, y: 128 },
                 { name: "BottomRight", x: 192, y: 128 },
+            ]
+        },
+        {
+            name: "Door",
+            regions: [
+                { name: "Top", x: 0, y: 0 },
+                { name: "Bottom", x: 0, y: 64 },
             ]
         },
     ];
