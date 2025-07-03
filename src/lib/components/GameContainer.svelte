@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { type SpriteData, loadAllSprites } from '$lib/ImageLoader';
 	import Game from './Game.svelte';
+	import Neon from './Neon.svelte';
 
 	let juliCanvas: HTMLCanvasElement;
 	let shaneCanvas: HTMLCanvasElement;
@@ -58,6 +59,11 @@
 		<img src="/web/shane-art.png" alt="Art of Shane sat on his butt looking into the distance" />
 	</div>
 	<div class="game-content">
+		<div class="game-title">
+			<Neon text={$_('game.title')} />
+		</div>
+		<div class="game-description">{$_('game.description-start')} {playerName} {$_('game.description-end')}</div>
+		
 		{#if !loading}
 			<Game bind:PlayerName={playerName} bind:GameImages={images} />
 		{:else}
@@ -117,6 +123,15 @@
 	.game-content {
 		width: 640px;
 		margin: 0 auto;
+	}
+
+	.game-description {
+		padding: 2rem 0;
+		color: #fff;
+		font-size: 1rem;
+		font-family: 'Press Start 2P', cursive;
+		text-align: center;
+		line-height: 1.4rem;
 	}
 
 	.hero-image {
@@ -302,6 +317,10 @@
 
 		.game-content {
 			width: 100%;
+		}
+
+		.game-description {
+			font-size: 0.8rem;
 		}
 
 		.buttons {

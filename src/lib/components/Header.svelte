@@ -1,8 +1,20 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
 	import { _, locale } from 'svelte-i18n';
 
 	function changeLocale(language: string) {
 		locale.set(language);
+	}
+
+	let languageIso : string = navigator.language;
+
+	if (languageIso.indexOf('-') != -1) {
+	}
+
+	let language = languageIso.split('-')[0].toLocaleLowerCase();
+
+	if (language == 'en' || language == 'es') {
+		changeLocale(language);
 	}
 </script>
 

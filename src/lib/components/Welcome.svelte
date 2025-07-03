@@ -28,7 +28,7 @@
         <div class="specifics">
             <div class="specific">
                 <div class="title">31 {$_('welcome.january')} 2026</div>
-                <div class="context">{$_('welcome.doors-open')} 19:00</div>
+                <div class="context">{$_('welcome.doors-open')} 18:00</div>
             </div>
             <div class="specific">
                 <div class="title">Brickhouse social</div>

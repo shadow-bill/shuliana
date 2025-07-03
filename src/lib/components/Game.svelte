@@ -743,6 +743,13 @@
         {#if !canvasFocused}
             <div class="start">{$_('game.start')}</div>
         {/if}
+        {#if game.player.specialCooldownFrames > 0}
+            <div class="recharge">
+                <div class="bar"></div>
+                <div class="current" style:width={(100 - ((game.player.specialCooldownFrames / 250.0) * 100)) + "%"}></div>
+                <div class="recharge-title">{$_('game.recharging')}</div>
+            </div>
+        {/if}
         <canvas
             bind:this={canvas}
             class="game-canvas"
@@ -806,6 +813,44 @@
 
 	.canvas-container {
         position: relative;
+    }
+
+    .recharge {
+        display: block;
+        position: absolute;
+        bottom: 20px;
+        left: 25%;
+        width: calc(50%);
+        height: 20px;
+    }
+
+    .recharge .bar, .recharge .current {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+    }
+
+
+    .recharge .bar {
+        background: linear-gradient(90deg, #ff709d 0%, #ff709d 30%, cyan 100%);
+        width: 100%;
+    }
+
+    .recharge .current {
+        left: initial;
+        right: 0;
+        background-color: #000;
+    }
+
+    .recharge .recharge-title {
+        position: absolute;
+        top: 6px;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 0.65rem;
     }
 
     .start {
