@@ -6,7 +6,11 @@ const config = {
 	// Consult https://svelte.dev/docs/kit/integrations
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
-
+	build: {
+		rollupOptions: {
+			treeshake: true
+		}
+	},
 	kit: {
 		adapter: adapter({
 			pages: "docs"

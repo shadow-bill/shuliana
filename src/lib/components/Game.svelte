@@ -819,8 +819,8 @@
         display: block;
         position: absolute;
         bottom: 20px;
-        left: 25%;
-        width: calc(50%);
+        left: 10%;
+        width: calc(90%);
         height: 20px;
     }
 
@@ -830,7 +830,6 @@
         left: 0;
         height: 20px;
     }
-
 
     .recharge .bar {
         background: linear-gradient(90deg, #ff709d 0%, #ff709d 30%, cyan 100%);
