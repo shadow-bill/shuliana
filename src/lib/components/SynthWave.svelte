@@ -206,10 +206,19 @@
     // Visibility API for performance
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', handleResize);
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', resizeCanvas);
+    }
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
+
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', resizeCanvas);
+      }
+
       cancelAnimationFrame(animationId);
     };
   });
@@ -318,12 +327,19 @@
     if (!canvas || !gl) return;
     
     const dpr = window.devicePixelRatio || 1;
-    const displayWidth = window.innerWidth;
-    const displayHeight = window.innerHeight;
-    
-    // Limit pixel ratio for performance on high-DPI displays
     const maxDPR = 2;
     const effectiveDPR = Math.min(dpr, maxDPR);
+    
+    // Use Visual Viewport API if available, fallback to window dimensions
+    let displayWidth, displayHeight;
+    
+    if (window.visualViewport) {
+      displayWidth = window.visualViewport.width;
+      displayHeight = window.visualViewport.height;
+    } else {
+      displayWidth = window.innerWidth;
+      displayHeight = window.innerHeight;
+    }
     
     canvas.width = displayWidth * effectiveDPR;
     canvas.height = displayHeight * effectiveDPR;
