@@ -89,6 +89,8 @@ export interface Camera {
 export interface WorldBounds {
     top: number,
     bottom: number,
+    left: number,
+    right: number,
 }
 
 export interface World {
@@ -102,7 +104,8 @@ export interface World {
     player: Actor,
     checkpoints: Checkpoint[],
     background: string,
-    events: GameEvents
+    events: GameEvents,
+    over: boolean
 }
 
 export interface GameEvents {

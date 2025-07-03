@@ -11,6 +11,7 @@
 	let shaneContext: CanvasRenderingContext2D | null;
 	let images: Record<string, SpriteData> = {};
 	let playerName: string = "Shane";
+	let playerX: number = 0;
 	let loading = false;
 
 	onMount(() => {
@@ -65,16 +66,16 @@
 		<div class="game-description">{$_('game.description-start')} {playerName} {$_('game.description-end')}</div>
 		
 		{#if !loading}
-			<Game bind:PlayerName={playerName} bind:GameImages={images} />
+			<Game bind:PlayerName={playerName} bind:GameImages={images} bind:PlayerX={playerX} />
 		{:else}
 			<p>{$_('game.loading')}</p>
 		{/if}
 		<div class="buttons">
-			<div class="retro-button" id="playAsJuli" on:click={() => playerName = "Juli"}>
+			<div class="retro-button" id="playAsJuli" on:click={() => { playerName = "Juli"; playerX = 0; }}>
 				<canvas bind:this={juliCanvas} id="juliCanvas" width="48" height="48"></canvas>
 				{$_('game.play-as')} Juli
 			</div>
-			<div class="retro-button secondary" id="playAsShane" on:click={() => playerName = "Shane"}>
+			<div class="retro-button secondary" id="playAsShane" on:click={() => {playerName = "Shane"; playerX = 0; }}>
 				<canvas bind:this={shaneCanvas} id="shaneCanvas" width="48" height="48"></canvas>
 				{$_('game.play-as')} Shane
 			</div>

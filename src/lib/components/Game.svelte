@@ -7,6 +7,7 @@
 
 	export let GameImages: Record<string, SpriteData> = {};
     export let PlayerName: string;
+    export let PlayerX: number;
 
     let canvasFocused: boolean
     let animationId: number;
@@ -36,6 +37,16 @@
 
     // This allows us to have full reactivity for the name / image object in real-time
     let playerCharacter = getActor('Shane', 'Groom', 'Idle');
+
+    // init location is a little easier
+    playerCharacter.x = 4542;
+
+    Object.defineProperty(playerCharacter, 'x', {
+        get() { return PlayerX; },
+        set(x: number) { PlayerX = x; },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(playerCharacter, 'name', {
         get() { return PlayerName; },
         enumerable: true,
@@ -55,7 +66,9 @@
         },
         worldBounds: {
             top: -400,
-            bottom: 400
+            bottom: 400,
+            left: -256,
+            right: 5568,
         },
         prefabs: {
             House: {
@@ -105,6 +118,46 @@
             getTile("Bridge", 22, 4, 1, 1),
             getTile("GroundFlat", 23, 4, 7, 1),
             getTile("GroundSoil", 23, 5, 7, 2),
+            getTile("GroundFlatEndRight", 30, 4, 1, 1),
+            getTile("GroundSoilEndRight", 30, 5, 1, 2),
+            getTile("GroundFlatEndLeft", 36, 3, 1, 1),
+            getTile("GroundSoilEndLeft", 36, 4, 1, 3),
+            getTile("GroundSoil", 37, 4, 6, 3),
+            getTile("GroundFlat", 37, 3, 6, 1),
+            getTile("GroundSlopeUp", 43, 2, 1, 1, 'UpRight'),
+            getTile("GroundSoilSlopeUp", 43, 3, 1, 1),
+            getTile("GroundSoil", 43, 4, 1, 3),
+            getTile("GroundSlopeUp", 44, 1, 1, 1, 'UpRight'),
+            getTile("GroundSoilSlopeUp", 44, 2, 1, 1),
+            getTile("GroundSoil", 44, 3, 1, 4),
+            getTile("GroundFlatEndRight", 45, 1, 1, 1),
+            getTile("GroundSoilEndRight", 45, 2, 1, 5),
+            getTile("GroundFlatEndLeft", 54, 5, 1, 1),
+            getTile("GroundSoilEndLeft", 54, 6, 1, 1),
+            getTile("GroundFlat", 55, 5, 3, 1),
+            getTile("GroundSoil", 55, 6, 3, 1),
+            getTile("GroundFlatEndRight", 58, 5, 1, 1),
+            getTile("GroundSoilEndRight", 58, 6, 1, 1),
+            getTile("GroundFlatEndLeft", 61, 4, 1, 1),
+            getTile("GroundSoilEndLeft", 61, 5, 1, 2),
+            getTile("GroundFlatEndRight", 62, 4, 1, 1),
+            getTile("GroundSoilEndRight", 62, 5, 1, 2),
+            getTile("GroundFlatEndLeft", 65, 3, 1, 1),
+            getTile("GroundSoilEndLeft", 65, 4, 1, 3),
+            getTile("GroundFlatEndRight", 66, 3, 1, 1),
+            getTile("GroundSoilEndRight", 66, 4, 1, 3),
+            getTile("GroundFlatEndLeft", 71, 3, 1, 1),
+            getTile("GroundSoilEndLeft", 71, 4, 1, 3),
+            getTile("GroundFlat", 72, 3, 2, 1),
+            getTile("GroundSoil", 72, 4, 2, 3),
+            getTile("GroundFlatEndRight", 74, 3, 1, 1),
+            getTile("GroundSoilEndRight", 74, 4, 1, 3),
+            getTile("GroundFlatEndLeft", 82, 2, 1, 1),
+            getTile("GroundSoilEndLeft", 82, 3, 1, 4),
+            getTile("GroundFlat", 83, 2, 30, 1),
+            getTile("GroundSoil", 83, 3, 30, 4),
+            getTile("GroundFlatEndRight", 113, 2, 1, 1),
+            getTile("GroundSoilEndRight", 113, 3, 1, 4),
         ],
         decorations: [
             getDecoration("House", 2, 1),
@@ -119,9 +172,14 @@
         player: playerCharacter,
         checkpoints: [
             // These must be in descending (inverse) order of x so that later checkpoints are checked first
-            getCheckpoint(1350, 1350, 0),
-            getCheckpoint(1100, 1120, 0),
-            getCheckpoint(940, 940, 0),
+            getCheckpoint(4542, 4542, 0),
+            getCheckpoint(4158, 4158, 0),
+            getCheckpoint(3902, 3902, 64),
+            getCheckpoint(3456, 3456, 128),
+            getCheckpoint(2314, 2314, 0),
+            getCheckpoint(1350, 1350, 64),
+            getCheckpoint(1100, 1120, 64),
+            getCheckpoint(940, 940, 64),
             getCheckpoint(-1000000, 0, 0),
         ],
         background: 'BackgroundSunset',
@@ -130,7 +188,8 @@
             right: false,
             left: false,
             special: false,
-        }
+        },
+        over: false
     };
 
 	onMount(() => {
@@ -185,7 +244,9 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         handleCheckpoints();
-        handleInput(deltaTime);
+
+        handleInput(deltaTime, handleEndGame());
+
         updateCamera();
         
         // Save canvas state for camera transformation
@@ -235,8 +296,8 @@
         }
     }
 
-    function handleInput(deltaTime: number) {
-        handleActorInput(game.player, game.events.left, game.events.right, game.events.jump, game.events.special, deltaTime);
+    function handleInput(deltaTime: number, isGameOver: boolean) {
+        handleActorInput(game.player, game.events.left, game.events.right, game.events.jump, game.events.special, isGameOver, deltaTime);
         game.events.jump = false;
         game.events.special = false;
     }
@@ -256,6 +317,7 @@
         
         // Clamp camera to world bounds
         game.camera.y = Math.max(game.worldBounds.top, Math.min(game.worldBounds.bottom - canvas.height, game.camera.y));
+        game.camera.x = Math.max(game.worldBounds.left, Math.min(game.worldBounds.right - canvas.width, game.camera.x));
     }
 
     function renderBackground(name: string) {
@@ -320,7 +382,7 @@
 
     function renderActors(time: number, deltaTime: number) {
         for (let actor of game.actors) {
-            handleActorInput(actor, false, false, false, false, deltaTime);
+            handleActorInput(actor, false, false, false, false, false, deltaTime);
             resolveCollisions(actor, deltaTime);
             handleMomentum(time, actor);
             renderImage(time, actor);
@@ -597,8 +659,38 @@
         }
     }
 
-    function handleActorInput(actor: Actor, isMovingLeft: boolean, isMovingRight: boolean, isJumping: boolean, isUsingSpecial: boolean, deltaTime: number) {
+    function handleEndGame() : boolean {
+        if (game.over) {
+            if (game.player.x < 1000) {
+                game.over = false;
+                return false;
+            }
+
+            return true;
+        }
+
+        if (game.player.x > game.worldBounds.right) {
+            game.over = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    function handleActorInput(actor: Actor, isMovingLeft: boolean, isMovingRight: boolean, isJumping: boolean, isUsingSpecial: boolean, isGameOver: boolean, deltaTime: number) {
         let acceleration = 0;
+
+        if (actor.specialCooldownFrames > 0) {
+            actor.specialCooldownFrames--;
+        }
+
+        if (actor.specialEffectFrames > 0) {
+            actor.specialEffectFrames--;
+        }
+
+        if (isGameOver) {
+            return;
+        }
         
         if (isMovingLeft) {
             acceleration = -actor.acceleration;
@@ -625,14 +717,6 @@
         if (isJumping && actor.onGround) {
             actor.velocityY = -actor.jumpPower;
             actor.onGround = false;
-        }
-
-        if (actor.specialCooldownFrames > 0) {
-            actor.specialCooldownFrames--;
-        }
-
-        if (actor.specialEffectFrames > 0) {
-            actor.specialEffectFrames--;
         }
 
         if (actor.specialEffectFrames == 0 && game.player.name != 'Shane') {
@@ -740,10 +824,16 @@
 <div class="container">
     <DebugMenu bind:PositionX={game.player.x} bind:PositionY={game.player.y} bind:VelocityX={game.player.velocityX} bind:VelocityY={game.player.velocityY} />
     <div class="canvas-container">
-        {#if !canvasFocused}
+        {#if !canvasFocused && !game.over}
             <div class="start">{$_('game.start')}</div>
         {/if}
-        {#if game.player.specialCooldownFrames > 0}
+        {#if game.over}
+            <div class="over">
+                {$_('game.complete')}
+                <div class="again">{$_('game.again')} {game.player.name == 'Shane' ? 'Juli' : 'Shane' }</div>
+            </div>
+        {/if}
+        {#if !game.over && game.player.specialCooldownFrames > 0}
             <div class="recharge">
                 <div class="bar"></div>
                 <div class="current" style:width={(100 - ((game.player.specialCooldownFrames / 250.0) * 100)) + "%"}></div>
@@ -819,8 +909,8 @@
         display: block;
         position: absolute;
         bottom: 20px;
-        left: 10%;
-        width: calc(90%);
+        left: 25%;
+        width: 50%;
         height: 20px;
     }
 
@@ -852,7 +942,7 @@
         font-size: 0.65rem;
     }
 
-    .start {
+    .start, .over {
         display: block;
         position: absolute;
         box-sizing: border-box;
@@ -867,6 +957,10 @@
         text-align: center;
         color: #000;
         text-transform: uppercase;
+    }
+
+    .over .again {
+        padding-top: 0.8rem;
     }
 
     .mobile-controls {
@@ -952,6 +1046,11 @@
     }
 
     @media (max-width: 1200px) {
+        .recharge {
+            left: 5%;
+            width: 90%;
+        }
+
         .start {
             display: none;
         }

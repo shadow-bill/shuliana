@@ -67,6 +67,7 @@
     "space": "Space",
     "down": "Down",
     "ability": "Special ability",
-    "complete": "NAME made it to the wedding! The secret password for an extra drink token is \"TREAT\""
+    "complete": "made it to the wedding! The secret password for an extra drink token is \"TREAT\"",
+    "again": "Click the buttons below to play again as"
   }
 }
