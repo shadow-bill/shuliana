@@ -330,16 +330,15 @@
     const maxDPR = 2;
     const effectiveDPR = Math.min(dpr, maxDPR);
     
-    // Use Visual Viewport API if available, fallback to window dimensions
-    let displayWidth, displayHeight;
-    
-    if (window.visualViewport) {
-      displayWidth = window.visualViewport.width;
-      displayHeight = window.visualViewport.height;
-    } else {
-      displayWidth = window.innerWidth;
-      displayHeight = window.innerHeight;
+    // Use Visual Viewport API if available, fallback to window dimensions    
+    let parent = document.querySelector('.welcome');
+
+    if (!parent) {
+      return;
     }
+
+    let displayWidth = parent.clientWidth;
+    let displayHeight = parent.clientHeight;
     
     canvas.width = displayWidth * effectiveDPR;
     canvas.height = displayHeight * effectiveDPR;
