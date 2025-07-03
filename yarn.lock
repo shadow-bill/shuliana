@@ -250,11 +250,6 @@
   resolved "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.25.5.tgz"
   integrity sha512-TXv6YnJ8ZMVdX+SXWVBo/0p8LTcrUYngpWjvm91TMjjBQii7Oz11Lw5lbDV5Y0TzuhSJHwiH4hEtC1I42mMS0g==
 
-"@fontsource/fira-mono@^5.0.0":
-  version "5.2.6"
-  resolved "https://registry.npmjs.org/@fontsource/fira-mono/-/fira-mono-5.2.6.tgz"
-  integrity sha512-6pyiGeFH+5DP5sICSwx5wu+9BlTEMTKki7bTppsEqXJysi1MiK82n6oSUaYkQWRLH51+DK7zv2JJsi82cOIS3g==
-
 "@formatjs/ecma402-abstract@2.3.4":
   version "2.3.4"
   resolved "https://registry.npmjs.org/@formatjs/ecma402-abstract/-/ecma402-abstract-2.3.4.tgz"

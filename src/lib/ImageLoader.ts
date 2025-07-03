@@ -101,7 +101,7 @@ function loadSpritesheet(spritesheetData: SpritesheetData): Promise<SpriteData[]
 
 export async function loadAllSprites(): Promise<SpriteData[]> {
     let imagesToLoad = [
-        { name: "BackgroundSunset", width: 957, height: 540, totalFrames: 1, frameTime: 0 },
+        { name: "BackgroundSunset", width: 640, height: 320, totalFrames: 1, frameTime: 0 },
         { name: "GroundFlat", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
         { name: "GroundFlatEndLeft", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
         { name: "GroundFlatEndRight", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
@@ -113,10 +113,6 @@ export async function loadAllSprites(): Promise<SpriteData[]> {
         { name: "GroundSlopeDown", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
         { name: "GroundSoilSlopeDown", width: 128, height: 128, totalFrames: 1, frameTime: 0 },
         { name: "Bridge", width: 256, height: 128, totalFrames: 1, frameTime: 0 },
-        { name: "BrickWallLeft", width: 128, height: 320, totalFrames: 1, frameTime: 0 },
-        { name: "BrickWall", width: 320, height: 320, totalFrames: 1, frameTime: 0 },
-        { name: "BrickWallRight", width: 128, height: 320, totalFrames: 1, frameTime: 0 },
-        { name: "Door", width: 64, height: 128, totalFrames: 1, frameTime: 0 },
         { name: "Barrel", width: 64, height: 64, totalFrames: 1, frameTime: 0 },
         { name: "GroomIdle", width: 64, height: 64, totalFrames: 2, frameTime: 0.5/2 },
         { name: "GroomRun", width: 64, height: 64, totalFrames: 8, frameTime: 1.0/8 },
@@ -124,11 +120,7 @@ export async function loadAllSprites(): Promise<SpriteData[]> {
         { name: "BrideIdle", width: 64, height: 64, totalFrames: 2, frameTime: 0.5/2 },
         { name: "BrideRun", width: 64, height: 64, totalFrames: 8, frameTime: 1.0/8 },
         { name: "BrideJump", width: 64, height: 64, totalFrames: 5, frameTime: 0.5/5 },
-        { name: "TifaRun", width: 64, height: 64, totalFrames: 8, frameTime: 1.0/5 },
         { name: "TifaIdle", width: 64, height: 64, totalFrames: 4, frameTime: 1.0/4 },
-        { name: "TifaAttack", width: 64, height: 64, totalFrames: 6, frameTime: 1.0/6 },
-        // Actually TifaAttack until I have a jump animation for her
-        { name: "TifaJump", width: 64, height: 64, totalFrames: 6, frameTime: 1.0/6 },
         { name: "AuraIdle", width: 64, height: 64, totalFrames: 7, frameTime: 0.5/7 },
         { name: "RegenIdle", width: 64, height: 64, totalFrames: 8, frameTime: 0.5/8 },
     ];
