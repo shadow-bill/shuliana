@@ -829,7 +829,7 @@
         {/if}
         {#if game.over}
             <div class="over">
-                {$_('game.complete')}
+                {game.player.name} {$_('game.complete')}
                 <div class="again">{$_('game.again')} {game.player.name == 'Shane' ? 'Juli' : 'Shane' }</div>
             </div>
         {/if}
